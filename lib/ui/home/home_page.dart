@@ -6,6 +6,10 @@ import 'home_banner.dart';
 import 'package:wan/entity_factory.dart';
 import 'package:wan/bean/home_item_entity.dart';
 import 'home_list_view.dart';
+import 'dart:async';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart' as extend;
+import 'package:loading_more_list/loading_more_list.dart';
+import 'package:wan/repository/home_repository.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -16,10 +20,12 @@ class _HomePageState extends State<HomePage> {
   List<BannerItemData> bannerList;
   HomeItemData homeData;
 
-  void request() async {
+  HomeRepository home;
+
+  request(int page) async {
     var manager = HttpManager();
     var result = await manager.get(Api.getBanner, null);
-    var homeResult = await manager.get(Api.getHomeData(0), null);
+    var homeResult = await manager.get(Api.getHomeData(page), null);
     var data = json.decode(result.toString());
     var home = json.decode(homeResult.toString());
     var entity = EntityFactory.generateOBJ<BannerItemEntity>(data);
@@ -32,49 +38,67 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    request();
+    request(0);
+    home = HomeRepository();
+  }
+
+
+  @override
+  void dispose() {
+  super.dispose();
+  home.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     if (bannerList == null) {
-      return Container(
-        child: Text('home'),
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(Color(0xFF68cbb2)),
+        ),
       );
     } else {
       return Container(
-        child: CustomScrollView(
-          slivers: <Widget>[
-            SliverAppBar(
-              title: Text('u'),
-              pinned: true,
-              backgroundColor: Color(0xFF68cbb2),
-              expandedHeight: MediaQuery.of(context).size.width * 0.6,
-              flexibleSpace: FlexibleSpaceBar(
-                background: HomeBanner(banners: bannerList),
-              ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate((builder, index) {
-                return Padding(
-                  padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                  child: GestureDetector(
-                    child: _ListItem(data: homeData.datas[index]),
-                    onTap: () {
-
-                    },
+        child: extend.NestedScrollViewRefreshIndicator(
+          child: NestedScrollView(
+              headerSliverBuilder: (c, f) {
+                return <Widget>[
+                  SliverAppBar(
+                    title: Text(''),
+                    pinned: true,
+                    backgroundColor: Color(0xFF68cbb2),
+                    expandedHeight: MediaQuery.of(context).size.width * 0.6,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: HomeBanner(banners: bannerList),
+                    ),
                   ),
-                );
+                ];
               },
-                childCount: homeData.datas.length
+              body: LoadingMoreCustomScrollView(
+                showGlowLeading: false,
+                showGlowTrailing: false,
+                rebuildCustomScrollView: true,
+                slivers: <Widget>[
+                  LoadingMoreSliverList(SliverListConfig<HomeItemDataData>(
+                    itemBuilder: (context, item, index) {
+                      return _ListItem(data: item);
+                    },
+                    sourceList: home,
+                  ))
+                ],
               ),
-            ),
-          ],
-        ),
+          ),
+            onRefresh: onRefresh),
       );
     }
   }
+
+  Future<bool> onRefresh() async {
+    return await home.refresh(true);
+  }
 }
+
+
 
 class _ListItem extends StatelessWidget {
 
@@ -84,16 +108,29 @@ class _ListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Column(
-        children: <Widget>[
-          Text(data.title),
+    return Padding(
+        padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+      child: Container(
+        color: Colors.white,
+        padding: EdgeInsets.all(10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(data.title, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.black45),),
 
-          Text(data.author),
+            SizedBox(height: 10.0,),
 
-          Text(data.niceDate)
-        ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(data.author),
+                Text(data.niceDate)
+              ],
+            ),
+
+          ],
+        ),
       ),
     );
   }
