@@ -1,2 +1,2 @@
-export 'Api.dart';
+export 'api.dart';
 export 'http_manager.dart';

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:wan/http/http_export.dart';
 import 'package:wan/bean/banner_item_entity.dart';
-import 'dart:convert';
 import 'home_banner.dart';
-import 'package:wan/entity_factory.dart';
 import 'package:wan/bean/home_item_entity.dart';
-import 'home_list_view.dart';
 import 'dart:async';
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart' as extend;
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
+    as extend;
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:wan/repository/home_repository.dart';
+import 'package:wan/repository/api_client.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -22,31 +20,21 @@ class _HomePageState extends State<HomePage> {
 
   HomeRepository home;
 
-  request(int page) async {
-    var manager = HttpManager();
-    var result = await manager.get(Api.getBanner, null);
-    var homeResult = await manager.get(Api.getHomeData(page), null);
-    var data = json.decode(result.toString());
-    var home = json.decode(homeResult.toString());
-    var entity = EntityFactory.generateOBJ<BannerItemEntity>(data);
-    var homeEntity = EntityFactory.generateOBJ<HomeItemEntity>(home);
-    bannerList = entity.data;
-    homeData = homeEntity.data;
-    setState(() {});
-  }
-
   @override
   void initState() {
     super.initState();
-    request(0);
+    ApiClient().getBanner().then((res) {
+      setState(() {
+        bannerList = res.data;
+      });
+    });
     home = HomeRepository();
   }
 
-
   @override
   void dispose() {
-  super.dispose();
-  home.dispose();
+    super.dispose();
+    home.dispose();
   }
 
   @override
@@ -60,7 +48,7 @@ class _HomePageState extends State<HomePage> {
     } else {
       return Container(
         child: extend.NestedScrollViewRefreshIndicator(
-          child: NestedScrollView(
+            child: NestedScrollView(
               headerSliverBuilder: (c, f) {
                 return <Widget>[
                   SliverAppBar(
@@ -87,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                   ))
                 ],
               ),
-          ),
+            ),
             onRefresh: onRefresh),
       );
     }
@@ -98,18 +86,15 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-
-
 class _ListItem extends StatelessWidget {
-
   final HomeItemDataData data;
 
-  const _ListItem({Key key, @required this.data}) : super(key : key);
+  const _ListItem({Key key, @required this.data}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+      padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
       child: Container(
         color: Colors.white,
         padding: EdgeInsets.all(10.0),
@@ -117,18 +102,20 @@ class _ListItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(data.title, style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold, color: Colors.black45),),
-
-            SizedBox(height: 10.0,),
-
+            Text(
+              data.title,
+              style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black45),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(data.author),
-                Text(data.niceDate)
-              ],
+              children: <Widget>[Text(data.author), Text(data.niceDate)],
             ),
-
           ],
         ),
       ),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:wan/bean/home_item_entity.dart';
+import 'package:wan/bean/system_item_entity.dart';
 
-class HomeListView extends StatelessWidget {
-  final List<HomeItemDataData> datas;
+class SystemListView extends StatelessWidget {
+  final List<SystemItemData> datas;
 
-  const HomeListView({Key key, @required this.datas}) : super(key: key);
+  const SystemListView({Key key, @required this.datas}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,19 +29,17 @@ class HomeListView extends StatelessWidget {
 }
 
 class _ListItem extends StatelessWidget {
-  final HomeItemDataData data;
+  final SystemItemData data;
 
   const _ListItem({Key key, @required this.data}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.lightGreen,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(data.title),
-          Text(data.author),
-          Text(data.niceDate)
+          Text(data.name),
         ],
       ),
     );
