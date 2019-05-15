@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wan/bean/system_item_entity.dart';
+import 'package:wan/ui/system/system_content_list_view.dart';
 
 class SystemListView extends StatelessWidget {
   final List<SystemItemData> datas;
@@ -39,7 +40,9 @@ class _ListItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(data.name),
+          Text(data.name,style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold),),
+
+          SystemContent(dataList: data.children),
         ],
       ),
     );
