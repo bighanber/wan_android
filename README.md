@@ -1,16 +1,3 @@
 # wan
 
-A new Flutter application.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+根据[wanandroid](https://wanandroid.com/index)提供的api接口做的一个Flutter客户端，功能不多，主要是为了熟悉Flutter，后续随着不断的学习，将不断的修改

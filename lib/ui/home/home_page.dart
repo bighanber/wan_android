@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
               headerSliverBuilder: (c, f) {
                 return <Widget>[
                   SliverAppBar(
-                    title: Text(''),
+                    title: Icon(Icons.android),
                     pinned: true,
                     backgroundColor: Color(0xFF68cbb2),
                     expandedHeight: MediaQuery.of(context).size.width * 0.6,

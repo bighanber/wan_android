@@ -16,11 +16,12 @@ class SystemArticlePage extends StatefulWidget {
 
 class _SystemArticlePageState extends State<SystemArticlePage> {
 
-//  SystemContentItemEntity articleData;
   List<SystemContentItemDataData> articleList = new List();
   ScrollController _controller;
   int page = 0;
   bool isLoading = false;
+  bool isComplete = false;
+  bool isShowFloat = false;
 
   @override
   void initState() {
@@ -31,6 +32,16 @@ class _SystemArticlePageState extends State<SystemArticlePage> {
     _controller.addListener(() {
       if(_controller.position.pixels == _controller.position.maxScrollExtent) {
         _loadMore();
+      }
+      int offset = _controller.offset.toInt();
+      if (offset < 400 && isShowFloat) {
+        setState(() {
+          isShowFloat = false;
+        });
+      } else if (offset > 400 && !isShowFloat) {
+        setState(() {
+          isShowFloat = true;
+        });
       }
     });
   }
@@ -43,7 +54,7 @@ class _SystemArticlePageState extends State<SystemArticlePage> {
       ),
       body: articleList == null || articleList.isEmpty ? Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation(Color(0xFF68cbb2)),
+          valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor),
         ),
       ) : RefreshIndicator(
           child: ListView.builder(
@@ -56,7 +67,7 @@ class _SystemArticlePageState extends State<SystemArticlePage> {
                 return Padding(
                   padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
                   child: GestureDetector(
-                    child: index < articleList.length ? _ListItem(data: articleList[index]) : _getMoreWidget(isLoading),
+                    child: index < articleList.length ? _ListItem(data: articleList[index]) : _getMoreWidget(context, isComplete),
                     onTap: () {
                       Navigator.of(context).push(
                           MaterialPageRoute(builder: (context) => WebDetail(url: articleList[index].link)));
@@ -65,61 +76,83 @@ class _SystemArticlePageState extends State<SystemArticlePage> {
                 );
               }),
           onRefresh: _refresh),
+
+      floatingActionButton: isShowFloat ? FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
+          child: Icon(Icons.keyboard_arrow_up),
+          onPressed: () {
+            _controller.animateTo(0.0, duration: Duration(milliseconds: 300), curve: Curves.linear);
+          }
+      ) : null,
     );
+  }
+
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<Null> _refresh() async {
     articleList.clear();
     page = 0;
-    print("refresh");
     ApiClient().getSystemContent(page, widget.cid).then((res) {
       setState(() {
         articleList.addAll(res.data.datas);
+        if (res.data.pageCount == page + 1) {
+          isComplete = true;
+        }
       });
     });
     return;
   }
 
   _loadMore() async {
-    print("loadmore");
     if (!isLoading) {
       setState(() {
         isLoading = true;
       });
       page++;
 
+      if (!isComplete) {
+        ApiClient().getSystemContent(page, widget.cid).then((res) {
 
-      ApiClient().getSystemContent(page, widget.cid).then((res) {
-
-//        if (res.data.datas.isEmpty) {
-//          double edge = 30.0;
-//          double offsetFromBottom = _controller.position.maxScrollExtent - _controller.position.pixels;
-//          if (offsetFromBottom < edge) {
-//            _controller.animateTo(
-//                _controller.offset - (edge -offsetFromBottom),
-//                duration: new Duration(milliseconds: 500),
-//                curve: Curves.easeOut);
+//          if (res.data.datas.isEmpty) {
+//            double edge = 30.0;
+//            double offsetFromBottom = _controller.position.maxScrollExtent - _controller.position.pixels;
+//            if (offsetFromBottom < edge) {
+//              _controller.animateTo(
+//                  _controller.offset - (edge -offsetFromBottom),
+//                  duration: new Duration(milliseconds: 500),
+//                  curve: Curves.easeOut);
+//            }
 //          }
-//        }
 
-        setState(() {
+          setState(() {
             articleList.addAll(res.data.datas);
-          isLoading = false;
+            isLoading = false;
+            if (res.data.datas.isEmpty) {
+              isComplete = true;
+            }
+          });
         });
-      });
+      }
+
     }
   }
 }
 
-Widget _getMoreWidget(bool isLoading) {
-  print(isLoading);
-  return Offstage(
-    offstage: isLoading,
-    child: Padding(
-      padding: EdgeInsets.only(top: 20.0),
-      child: LinearProgressIndicator(
-        valueColor: AlwaysStoppedAnimation(Color(0xFF68cbb2)),
-      ),
+Widget _getMoreWidget(context, bool isComplete) {
+  return isComplete ? Padding(
+    padding: EdgeInsets.only(top: 10.0,bottom: 10.0),
+    child: Center(
+      child: Text("--------我是有底线的--------"),
+    ),
+  ) : Padding(
+    padding: EdgeInsets.only(top: 20.0),
+    child: LinearProgressIndicator(
+      valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor),
     ),
   );
 }

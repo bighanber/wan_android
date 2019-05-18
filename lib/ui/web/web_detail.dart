@@ -16,7 +16,6 @@ class _WebDetailState extends State<WebDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("23"),
       ),
       body: WebView(
         initialUrl: widget.url,
