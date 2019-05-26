@@ -27,6 +27,7 @@ dependencies:
   extended_nested_scroll_view: ^0.3.4
   loading_more_list: ^0.3.1
   webview_flutter: ^0.3.7+1
+  flute_music_player:
 
 dev_dependencies:
   flutter_test:
